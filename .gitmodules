@@ -1,6 +1,3 @@
-[submodule "external/FTXUI"]
-	path = external/FTXUI
-	url = https://github.com/ArthurSonzogni/FTXUI
 [submodule "external/inifile-cpp"]
 	path = external/inifile-cpp
 	url = https://github.com/Rookfighter/inifile-cpp.git
