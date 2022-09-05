@@ -17,7 +17,7 @@ int rack = 0;
 
 std::binary_semaphore rackMutex(1);
 std::counting_semaphore fullCount(0);
-std::counting_semaphore emptyCount(RACK_SIZE);
+std::counting_semaphore emptyCount(RACK_SIZE); //TODO: Fix this. Try to initialize this semaphore later on.
 std::binary_semaphore customerMutex(1);
 std::counting_semaphore customerSem(0);
 std::counting_semaphore burger(0);
