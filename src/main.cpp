@@ -60,8 +60,6 @@ void assureState()
 
 [[noreturn]] void cashier(int id)
 {
-    //for debugging, cashier takes a burger out every 2s
-    //in actual program replace with only when the customer wants
     while(true)
     {
         customerSem.acquire(); //wait for customers
@@ -84,7 +82,6 @@ void assureState()
 void customer(int id)
 {
     customerMutex.acquire(); //enter CS for one customer at a time
-    sleep(2);
     //CS
     //signal cashier that a customer is present
     customerSem.release();
