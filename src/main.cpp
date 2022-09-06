@@ -3,11 +3,10 @@
 #include <thread>
 #include <semaphore>
 #include <syncstream>
-#include <fstream>
 #include <inicpp.h>
 
 
-int RACK_SIZE = 0;               //size of the rack
+int RACK_SIZE = 10;               //size of the rack
 int COOKING_TIME_MS = 0;       //cooking time of each burger, in milliseconds
 int NUMBER_OF_COOKS = 0;          //number of cooks
 int NUMBER_OF_CASHIERS = 0;       //number of cashiers
@@ -17,10 +16,27 @@ int rack = 0;
 
 std::binary_semaphore rackMutex(1);
 std::counting_semaphore fullCount(0);
-std::counting_semaphore emptyCount(RACK_SIZE); //TODO: Fix this. Try to initialize this semaphore later on.
+std::counting_semaphore emptyCount(RACK_SIZE);
 std::binary_semaphore customerMutex(1);
 std::counting_semaphore customerSem(0);
 std::counting_semaphore burger(0);
+
+
+void assureState()
+{
+    if(rack < 0)
+    {
+        std::osyncstream(std::cout) << "Rack Underflow!" << std::endl;
+    }
+    else if(rack > RACK_SIZE)
+    {
+        std::osyncstream(std::cout) << "Rack Overflow!" << std::endl;
+    }
+    else
+    {
+        std::osyncstream(std::cout) << "Valid State" << std::endl;
+    }
+}
 
 [[noreturn]] void cook(int id)
 {
@@ -32,7 +48,9 @@ std::counting_semaphore burger(0);
         //lock rack and put burger in it
         rackMutex.acquire();
         std::this_thread::sleep_for(std::chrono::milliseconds(COOKING_TIME_MS));
+        assureState();
         rack++;
+        assureState();
         rackMutex.release();
 
         std::osyncstream(std::cout) << "[COOK " << id << "] " << "Putting burger onto rack" << "\n";
@@ -51,7 +69,9 @@ std::counting_semaphore burger(0);
 
         //lock rack and take burger out
         rackMutex.acquire();
+        assureState();
         rack--;
+        assureState();
         rackMutex.release();
 
         std::osyncstream(std::cout) << "[CASHIER " << id << "] " << "Taking burger from rack" << "\n";
@@ -59,6 +79,7 @@ std::counting_semaphore burger(0);
         burger.release(); //signal that burger is given
     }
 }
+
 
 void customer(int id)
 {
@@ -91,7 +112,6 @@ int main()
     NUMBER_OF_CASHIERS = configFile["config"]["cashiers"].as<int>();
     NUMBER_OF_CUSTOMERS = configFile["config"]["customers"].as<int>();
     COOKING_TIME_MS = configFile["config"]["cooking_time_ms"].as<int>();
-    RACK_SIZE = configFile["config"]["rack"].as<int>();
 
 
     std::cout << "=====Burger Buddies Problem=====" << std::endl;
@@ -118,7 +138,7 @@ int main()
     }
 
 
-
+    //joining all threads
     for(auto& x : cooksArr)
     {
         x.join();
